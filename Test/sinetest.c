@@ -13,15 +13,22 @@ int x;
 
 void setup()
 {
-	bit_set(DDRA, SR_CLK_PIN);
-	bit_set(DDRA, SR_CLR_PIN);
-	bit_set(DDRA, SR_A_PIN);
-	bit_set(DDRA, LED_C5_PIN);
-	bit_clear(PORTA, LED_C5_PIN);
+	// Set shift register pins to output
+	bit_set(SR_CLK_DDR, SR_CLK_PIN);
+	bit_set(SR_CLK_DDR, SR_CLR_PIN);
+	bit_set(SR_CLK_DDR, SR_A_PIN);
+
+	// Set Column 5 to output and set it low
+	bit_set(SR_CLK_DDR, LED_C5_PIN);
+	bit_clear(SR_CLK_PORT, LED_C5_PIN);
+
+	// Pulse shift register's !CLR pin high then low to clear the SR
 	bit_clear(SR_CLR_PORT, SR_CLR_PIN);
 	_delay_ms(1);	
 	bit_set(SR_CLR_PORT, SR_CLR_PIN);
 	_delay_ms(1);
+
+	// Set shift register low, then pulse in 4 bits
 	bit_clear(SR_A_PORT, SR_A_PIN);
 	for(x = 4; x > 0; x--)
 	{
@@ -30,6 +37,8 @@ void setup()
 		bit_clear(SR_CLK_PORT, SR_CLK_PIN);
 		_delay_ms(1);
 	}
+
+	// Set shift register high, then pulse in a further 4 bits
 	bit_set(SR_A_PORT, SR_A_PIN);
 	for(x = 4; x > 0; x--)
 	{
@@ -42,7 +51,6 @@ void setup()
 
 void loop()
 {
-	
 	_delay_ms(200);
 }
 
