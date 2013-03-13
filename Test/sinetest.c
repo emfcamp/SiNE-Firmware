@@ -21,7 +21,7 @@ ISR(PCINT0_vect)
 void setShift(int value) 
 {
 	int x;
-	// Set shift register low, then pulse in 4 bits
+	// Shift in 8 bits, LSB first
 	for(x = 0; x < 8; x++) {
 		int bit = (value >> x) & 1;
 		bit_write(bit, SR_A_PORT, SR_A_PIN);
