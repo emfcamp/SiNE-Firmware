@@ -11,6 +11,20 @@
 
 int x;
 
+void setShift(int value) 
+{
+	// Set shift register low, then pulse in 4 bits
+	for(x = 0; x < 8; x++)
+	{
+	  int bit = (value >> x) & 1;
+	  bit_write(bit, SR_A_PORT, SR_A_PIN);
+	  _delay_ms(1);	
+	  bit_set(SR_CLK_PORT, SR_CLK_PIN);
+	  _delay_ms(1);
+	  bit_clear(SR_CLK_PORT, SR_CLK_PIN);
+	}     
+}
+
 void setup()
 {
 	// Set shift register pins to output
@@ -28,30 +42,15 @@ void setup()
 	bit_set(SR_CLR_PORT, SR_CLR_PIN);
 	_delay_ms(1);
 
-	// Set shift register low, then pulse in 4 bits
-	bit_clear(SR_A_PORT, SR_A_PIN);
-	for(x = 4; x > 0; x--)
-	{
-		bit_set(SR_CLK_PORT, SR_CLK_PIN);
-		_delay_ms(1);	
-		bit_clear(SR_CLK_PORT, SR_CLK_PIN);
-		_delay_ms(1);
-	}
-
-	// Set shift register high, then pulse in a further 4 bits
-	bit_set(SR_A_PORT, SR_A_PIN);
-	for(x = 4; x > 0; x--)
-	{
-		bit_set(SR_CLK_PORT, SR_CLK_PIN);
-		_delay_ms(1);	
-		bit_clear(SR_CLK_PORT, SR_CLK_PIN);
-		_delay_ms(1);
-	}
+	
 }
 
 void loop()
 {
 	_delay_ms(200);
+
+	setShift(0xF0);
+
 }
 
 /**
