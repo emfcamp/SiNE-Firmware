@@ -47,8 +47,7 @@ void setup()
 	bit_clear(SR_CLR_PORT, SR_CLR_PIN);
 	_delay_ms(1);	
 	bit_set(SR_CLR_PORT, SR_CLR_PIN);
-	_delay_ms(1);
-	
+	_delay_ms(1);	
 
 	column = 0;
 	row = 0;
@@ -59,7 +58,26 @@ void setup()
 	PCMSK0 |= (1<<PCINT6); // Interrupt on pin 6 change (MOSI)
 	GIMSK |= (1<<PCIE0); // Enable interrupts on PCINT7:0
 	sei();  // Enable global interrupts.
+
+	// Configure IR_OUT pwm
+	// Make MISO an output and drive it low
+	bit_set(MISO_DDR, MISO_PIN); 
+	  bit_clear(MISO_PORT, MISO_PIN);
+
+	// Make IR_PWM an output
+	bit_set(IR_PWM_DDR, IR_PWM_PIN);
+
+	TCNT0 = 0; // Initial clock
+	int period = 13; // Gets about 37.5kHz
+	OCR0B = period; // OC0B compare register
+	OCR0A = period; // Same value
 	
+	TCCR0A |= (1<<COM0B0) | (1<<WGM01); // Toggle OC0B on compare match, CTC mode
+	TCCR0B = 1; // start clock (/1 prescaler)
+	// We run at 1000000Hz
+	// OCR0A = 255 So we will toggle at 1000/255 kHz 
+	// We want 1000/X == 76khz 
+	// So 
 }
 
 void loop()
