@@ -9,8 +9,15 @@
 #include "macros.h"
 #include "sinetest.h"
 
-int column;
-int row;
+volatile int column;
+volatile int row;
+
+ISR(PCINT0_vect)
+{
+	column = 0;
+	row = 0;
+}
+
 void setShift(int value) 
 {
 	int x;
@@ -18,9 +25,9 @@ void setShift(int value)
 	for(x = 0; x < 8; x++) {
 		int bit = (value >> x) & 1;
 		bit_write(bit, SR_A_PORT, SR_A_PIN);
-		_delay_ms(1);	
+		_delay_us(10);	
 		bit_set(SR_CLK_PORT, SR_CLK_PIN);
-		_delay_ms(1);
+		_delay_us(10);
 		bit_clear(SR_CLK_PORT, SR_CLK_PIN);
 	}     
 }
@@ -45,6 +52,14 @@ void setup()
 
 	column = 0;
 	row = 0;
+	
+	bit_clear(MOSI_DDR, MOSI_PIN); // Make sure MOSI is an input
+
+	// Configure interrupts
+	PCMSK0 |= (1<<PCINT6); // Interrupt on pin 6 change (MOSI)
+	GIMSK |= (1<<PCIE0); // Enable interrupts on PCINT7:0
+	sei();  // Enable global interrupts.
+	
 }
 
 void loop()
