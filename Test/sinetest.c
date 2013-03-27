@@ -12,6 +12,12 @@
 volatile int column;
 volatile int row;
 
+char a[4] = { 0b10001, 0b11111, 0b01010, 0b00100 };
+char b[4] = { 0b11111, 0b10001, 0b11110, 0b10000 };
+
+char* colData;
+
+
 ISR(PCINT0_vect)
 {
 	column = 0;
@@ -25,9 +31,7 @@ void setShift(int value)
 	for(x = 0; x < 8; x++) {
 		int bit = (value >> x) & 1;
 		bit_write(bit, SR_A_PORT, SR_A_PIN);
-		_delay_us(10);	
 		bit_set(SR_CLK_PORT, SR_CLK_PIN);
-		_delay_us(10);
 		bit_clear(SR_CLK_PORT, SR_CLK_PIN);
 	}     
 }
@@ -80,28 +84,36 @@ void setup()
 	
 	TCCR0A |= (1<<COM0B0) | (1<<WGM01); // Toggle OC0B on compare match, CTC mode
 	TCCR0B = 1; // start clock (/1 prescaler)
+	colData = a;
 
+
+	bit_set(BTN1_PORT, BTN1_PIN);
+	bit_set(BTN2_PORT, BTN2_PIN);
 }
 
 void loop()
 {
-	_delay_ms(200);
-	row++;
+
+	if(!bit_get(BTN1_PORT, BTN1_PIN)) {
+		colData = a;
+	}
+
+	if(!bit_get(BTN2_PORT, BTN2_PIN)) {
+		colData = b;
+	}
 
 	bit_flip(MISO_PORT, MISO_PIN);
-
-	if(row % 4 == 0) {
-		column += 1;
-	}
-	
-	int columns = 1<<(column % 5);
-	int rows = 1<<(row % 4);
-
-	setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
-	if(columns & 0x10) {
-		bit_clear(LED_C5_PORT,LED_C5_PIN);
-	} else {
-		bit_set(LED_C5_PORT,LED_C5_PIN);
+	for(row=0;row<4;row++) {
+		int columns = colData[row];
+		int rows = 1<<(row % 4);
+		
+		setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
+		if(columns & 0x10) {
+			bit_clear(LED_C5_PORT,LED_C5_PIN);
+		} else {
+			bit_set(LED_C5_PORT,LED_C5_PIN);
+		}
+		_delay_ms(5);
 	}
 }
 
