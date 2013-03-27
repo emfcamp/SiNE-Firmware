@@ -1,4 +1,4 @@
-#define F_CPU 1000000UL
+#define F_CPU 8000000UL
 #define USART_BAUDRATE 9600
 
 #include <avr/io.h>
@@ -60,30 +60,35 @@ void setup()
 	sei();  // Enable global interrupts.
 
 	// Configure IR_OUT pwm
-	// Make MISO an output and drive it low
+	// Make MISO an output and drive it high
 	bit_set(MISO_DDR, MISO_PIN); 
-	  bit_clear(MISO_PORT, MISO_PIN);
+	bit_set(MISO_PORT, MISO_PIN);
 
 	// Make IR_PWM an output
 	bit_set(IR_PWM_DDR, IR_PWM_PIN);
 
+	// We run at 8MHz
+	// We want period to be half the wavelength
+	// We want 38kHz = 1/38000 seconds / cycle
+	// = 1/76000 seconds/half cycle
+	// = 8000000/76000
+
 	TCNT0 = 0; // Initial clock
-	int period = 13; // Gets about 37.5kHz
+	int period = 106; // Gets about 38kHz
 	OCR0B = period; // OC0B compare register
 	OCR0A = period; // Same value
 	
 	TCCR0A |= (1<<COM0B0) | (1<<WGM01); // Toggle OC0B on compare match, CTC mode
 	TCCR0B = 1; // start clock (/1 prescaler)
-	// We run at 1000000Hz
-	// OCR0A = 255 So we will toggle at 1000/255 kHz 
-	// We want 1000/X == 76khz 
-	// So 
+
 }
 
 void loop()
 {
 	_delay_ms(200);
 	row++;
+
+	bit_flip(MISO_PORT, MISO_PIN);
 
 	if(row % 4 == 0) {
 		column += 1;
