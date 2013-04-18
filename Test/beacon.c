@@ -89,29 +89,37 @@ void setup()
 
 void transmit1()
 {
-	bit_clear(MISO_PORT, MISO_PIN);
-	_delay_us(889);
-	bit_set(MISO_PORT, MISO_PIN); 
-	_delay_us(889);
+	bit_set(MISO_PORT, MISO_PIN);
+	_delay_us(1200);
+	bit_clear(MISO_PORT, MISO_PIN); 
+	_delay_us(600);
 }
 
 void transmit0()
 {
 	bit_set(MISO_PORT, MISO_PIN);
-	_delay_us(889);
+	_delay_us(600);
 	bit_clear(MISO_PORT, MISO_PIN); 
-	_delay_us(889);
+	_delay_us(600);
+}
+
+void transmit_start()
+{
+	bit_set(MISO_PORT, MISO_PIN);
+	_delay_us(600*4);
+	bit_clear(MISO_PORT, MISO_PIN); 
+	_delay_us(600);
 }
 
 void loop()
 {
 	if(!bit_get(BTN1_PORT, BTN1_PIN)) {
-		IRseq = 0b1;
+		IRseq = 0b10000001;
 		rows = 0b10;
 	}
 
 	if(!bit_get(BTN2_PORT, BTN2_PIN)) {
-		IRseq = 0b1000;
+		IRseq = 0b10000010;
 		rows = 0b100;
 	}
 
@@ -119,10 +127,11 @@ void loop()
 
 	bit_clear(MISO_PORT, MISO_PIN);
 	_delay_us(1000);
+        transmit_start();
 	int bit;
-	for(bit=13;bit>=0;bit--) {
+	for(bit=0;bit<12;bit++) {
 		int b = (IRseq>>bit) & 1;
-		if(b==1) {
+		if(b==0) {
 			transmit0();
 		}
 		else
