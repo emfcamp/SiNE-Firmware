@@ -22,19 +22,24 @@ char currentBit = 1;
 unsigned int oldTime = 0;
 char interbit = 0;
 volatile int seq = 0;
-const int tolerance = 200;
 int receives = 0;
 int elapsed = 0;
+int bit = 0;
+int foundBeacons = 0;
+const int cmdlen = 12;
+#define BEACONS 0
+#define DEBUG 1
+int mode = BEACONS;
+#define SIRCS_DECODER 1
+//#define RC5_DECODER 1
 
+#ifdef SIRCS_DECODER
 ISR(PCINT0_vect)
 {
-	// Check the clock and figure out the time since the last change
-	// If it's "long", we're on the start bit, and the current bit is 1, emit 1.
-	// If it's about 889usec and interbit is set, clear interbit.
-	// If it's about 889usec, emit current, set the interbit flag.
-	// If it's longer, about 1778usec, current=!current and emit current.
-
+        const int tolerance = 200;
+        const int timebase = 600;
 	unsigned int time = TCNT1;
+        elapsed = 0;
 	if(time < oldTime) {
 		unsigned int remain = 0xFFFF - oldTime;
 		elapsed += time + remain;
@@ -42,41 +47,33 @@ ISR(PCINT0_vect)
 	else {
 		elapsed += time - oldTime;
 	}
-	oldTime = time;
+ 	oldTime = time;
 
-	if(elapsed < 889+tolerance && seq < 14) {
-		if(interbit) {
-			interbit = 0;
-		} else {
-			IRcode <<= 1;
-			IRcode |= currentBit;
-			interbit = 1;
-			seq ++;
-			if(seq == 14) {
-				latchIR = IRcode;
-			}
-		}
-		elapsed = 0;
-	}
-	else if(elapsed > 1778-tolerance && elapsed < 1778+tolerance && seq < 14) {
-		currentBit = 1-currentBit;
-		IRcode <<= 1;
-		IRcode |= currentBit;
-		seq ++;
-		elapsed = 0;
-		if(seq == 14) {
-			latchIR = IRcode;
-		}
+        bit = 1-bit;
 
-	}
-	else if(elapsed > 2000) {
-		interbit = 0;
-		IRcode = 1;
-		currentBit = 1;
-		seq=0;
-		elapsed = 0;
-	}
+        // We only care about falling edges
+        if(elapsed < timebase*4 + tolerance && elapsed > timebase*4-tolerance) {
+          // start pulse
+          IRcode = 0;
+          seq = 0;
+          bit = 1;
+        }
+        if(bit==1) {
+          if(seq < cmdlen) {
+            if(elapsed < timebase*2 + tolerance && elapsed > timebase*2-tolerance) {
+              IRcode |= (1<<seq);
+              seq++;
+            }
+            else if(elapsed < timebase + tolerance && elapsed > timebase-tolerance) {
+              seq++;
+            }
+            if(seq >=cmdlen) {
+              latchIR = IRcode;
+            }
+          }
+        }
 }
+#endif
 
 void setShift(int value) 
 {
@@ -153,23 +150,35 @@ void setup()
 
 void loop()
 {
-
 	if(!bit_get(BTN1_PORT, BTN1_PIN)) {
-		colData = a;
+          mode = BEACONS;
 	}
-
 	if(!bit_get(BTN2_PORT, BTN2_PIN)) {
-		colData = b;
+          mode = DEBUG;
 	}
+        
 
-	int command = (latchIR & 0x3F);
-	int address = (latchIR >> 5) & 0x1f;
+        int command = latchIR & 0x7F;
+        int device = (latchIR>> 7) & 0x1F;
 
-	colData[2] = command & 0x1F; 
-	colData[3] = address;
+        if(device == 1 && command < 15) {
+          foundBeacons |= (1<<command);
+        }
 
-	colData[0] = 1 << (seq % 5);
-	colData[1] = 0x1;
+        if(mode == BEACONS) {
+          colData[0] = foundBeacons & 0x1f;
+          colData[1] = (foundBeacons>>5) & 0x1f;
+        }
+        else
+        {
+          colData[0] = 1 << (seq % 5);
+          colData[1] = (latchIR & 0x1F);
+          colData[2] = (latchIR >> 5) & 0x1f;
+          colData[3] = (latchIR >> 10) & 0x1f;
+        }
+
+
+
 	//bit_flip(MISO_PORT, MISO_PIN); // Uncomment this to flash the IR Led
 	for(row=0;row<4;row++) {
 		int columns = colData[row];
