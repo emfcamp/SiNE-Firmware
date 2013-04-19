@@ -26,7 +26,7 @@ const int cmdlen = 12;
 #define BEACONS 0
 #define DEBUG 1
 int mode = BEACONS;
-
+int frame;
 
 ISR(PCINT0_vect)
 {
@@ -141,7 +141,7 @@ void setup()
 
         foundBeacons = eeprom_read_byte(0) | (eeprom_read_byte(1)<<8);
         foundBeacons2 = eeprom_read_byte(2) | (eeprom_read_byte(3)<<8);
-
+        frame = 0;
 }
 
 void loop()
@@ -164,7 +164,11 @@ void loop()
           }
         }
         else if(device == 1 && command < 20) {
-          foundBeacons2 |= (1<<(command-10));
+          if((foundBeacons2 & (1<<(command-10))) == 0) {
+            foundBeacons2 |= (1<<(command-10));
+            eeprom_write_byte(2,foundBeacons2);
+            eeprom_write_byte(3,foundBeacons2>>8);
+          }
         }
 
         if(mode == BEACONS) {
@@ -182,18 +186,22 @@ void loop()
         }
 
 	//bit_flip(MISO_PORT, MISO_PIN); // Uncomment this to flash the IR Led
-	for(row=0;row<4;row++) {
-		int columns = colData[row];
-		int rows = 1<<(row % 4);
-		
-		setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
-		if(columns & 0x10) {
-			bit_clear(LED_C5_PORT,LED_C5_PIN);
-		} else {
-			bit_set(LED_C5_PORT,LED_C5_PIN);
-		}
-		_delay_ms(5);
-	}
+        frame += 1;
+	
+        row += 1;
+        int columns = colData[row%4];
+        int rows = 1<<(row % 4);
+        setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
+        if(columns & 0x10) {
+          bit_clear(LED_C5_PORT,LED_C5_PIN);
+        } else {
+          bit_set(LED_C5_PORT,LED_C5_PIN);
+        }
+        _delay_ms(500);
+        setShift(0);
+        if(row%4==3) {
+          _delay_ms(5000);
+        }
 }
 
 /**
