@@ -12,10 +12,7 @@
 volatile int column;
 volatile int row;
 
-char a[4] = { 0b10001, 0b11111, 0b01010, 0b00100 };
-char b[4] = { 0b11111, 0b10001, 0b11110, 0b10000 };
-
-char* colData;
+char colData[4];
 volatile int IRcode = 0;
 int latchIR = 0;
 char currentBit = 1;
@@ -130,7 +127,6 @@ void setup()
 	
 	TCCR0A |= (1<<COM0B0) | (1<<WGM01); // Toggle OC0B on compare match, CTC mode
 	TCCR0B = 1; // start clock (/1 prescaler)
-	colData = a;
 
 
 	bit_set(BTN1_PORT, BTN1_PIN);
