@@ -27,6 +27,7 @@ const int cmdlen = 12;
 #define DEBUG 1
 int mode = BEACONS;
 
+
 ISR(PCINT0_vect)
 {
         const int tolerance = 200;
@@ -137,6 +138,10 @@ void setup()
 	// Set up timer1 as a general interval timer.
 	// Ideally we should set up timer1 so it latches at TOP
 	TCCR1B = 2; // Start clock (/8 prescaler = 1Mhz)
+
+        foundBeacons = eeprom_read_byte(0);
+        foundBeacons2 = eeprom_read_byte(1);
+
 }
 
 void loop()
@@ -153,6 +158,9 @@ void loop()
 
         if(device == 1 && command < 10) {
           foundBeacons |= (1<<command);
+          if(foundBeacons != eeprom_read_byte(0)) {
+            eeprom_write_byte(0,foundBeacons);
+          }
         }
         else if(device == 1 && command < 20) {
           foundBeacons2 |= (1<<(command-10));
