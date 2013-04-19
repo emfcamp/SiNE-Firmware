@@ -20,20 +20,16 @@ volatile int IRcode = 0;
 int latchIR = 0;
 char currentBit = 1;
 unsigned int oldTime = 0;
-char interbit = 0;
 volatile int seq = 0;
-int receives = 0;
 int elapsed = 0;
 int bit = 0;
 int foundBeacons = 0;
+int foundBeacons2 = 0;
 const int cmdlen = 12;
 #define BEACONS 0
 #define DEBUG 1
 int mode = BEACONS;
-#define SIRCS_DECODER 1
-//#define RC5_DECODER 1
 
-#ifdef SIRCS_DECODER
 ISR(PCINT0_vect)
 {
         const int tolerance = 200;
@@ -73,7 +69,6 @@ ISR(PCINT0_vect)
           }
         }
 }
-#endif
 
 void setShift(int value) 
 {
@@ -157,17 +152,21 @@ void loop()
           mode = DEBUG;
 	}
         
-
         int command = latchIR & 0x7F;
         int device = (latchIR>> 7) & 0x1F;
 
-        if(device == 1 && command < 15) {
+        if(device == 1 && command < 10) {
           foundBeacons |= (1<<command);
+        }
+        else if(device == 1 && command < 20) {
+          foundBeacons2 |= (1<<(command-10));
         }
 
         if(mode == BEACONS) {
           colData[0] = foundBeacons & 0x1f;
           colData[1] = (foundBeacons>>5) & 0x1f;
+          colData[2] = (foundBeacons2) & 0x1f;
+          colData[3] = (foundBeacons2>>5) & 0x1f;
         }
         else
         {
@@ -176,8 +175,6 @@ void loop()
           colData[2] = (latchIR >> 5) & 0x1f;
           colData[3] = (latchIR >> 10) & 0x1f;
         }
-
-
 
 	//bit_flip(MISO_PORT, MISO_PIN); // Uncomment this to flash the IR Led
 	for(row=0;row<4;row++) {
