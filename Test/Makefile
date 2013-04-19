@@ -71,6 +71,10 @@ progbeacon: $(BEACONNAME).hex
 fuses:	
 	$(AVRDUDE) -p $(AVRDUDE_PART) -c $(AVRDUDE_PROG) -P $(AVRDUDE_PORT) -U lfuse:w:0xc2:m -U hfuse:w:0xd7:m -U efuse:w:0xff:m
 
+eeprom:	
+	$(AVRDUDE) -p $(AVRDUDE_PART) -c $(AVRDUDE_PROG) -P $(AVRDUDE_PORT) -U eeprom:w:eeprom.bin:r
+
+
 	
 # Cleanup, leave only makefile and any .c/.h files
 clean:
