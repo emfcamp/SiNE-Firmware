@@ -20,8 +20,8 @@ unsigned int oldTime = 0;
 volatile int seq = 0;
 int elapsed = 0;
 int bit = 0;
-int foundBeacons = 0;
-int foundBeacons2 = 0;
+unsigned int foundBeacons = 0;
+unsigned int foundBeacons2 = 0;
 const int cmdlen = 12;
 #define BEACONS 0
 #define DEBUG 1
@@ -139,8 +139,8 @@ void setup()
 	// Ideally we should set up timer1 so it latches at TOP
 	TCCR1B = 2; // Start clock (/8 prescaler = 1Mhz)
 
-        foundBeacons = eeprom_read_byte(0);
-        foundBeacons2 = eeprom_read_byte(1);
+        foundBeacons = eeprom_read_byte(0) | (eeprom_read_byte(1)<<8);
+        foundBeacons2 = eeprom_read_byte(2) | (eeprom_read_byte(3)<<8);
 
 }
 
@@ -157,9 +157,10 @@ void loop()
         int device = (latchIR>> 7) & 0x1F;
 
         if(device == 1 && command < 10) {
-          foundBeacons |= (1<<command);
-          if(foundBeacons != eeprom_read_byte(0)) {
+          if((foundBeacons & (1<<command)) == 0) {
+            foundBeacons |= (1<<command);
             eeprom_write_byte(0,foundBeacons);
+            eeprom_write_byte(1,foundBeacons>>8);
           }
         }
         else if(device == 1 && command < 20) {
