@@ -9,10 +9,7 @@
 #include "macros.h"
 #include "sinetest.h"
 
-volatile int column;
-volatile int row;
-
-char* colData;
+char colData[4];
 volatile int IRcode = 0;
 int latchIR = 0;
 char currentBit = 1;
@@ -24,8 +21,8 @@ int receives = 0;
 int elapsed = 0;
 int collection = 0;
 int IRseq = 0;
-	int columns = 0x0001;
-	int rows = 0x0001;
+
+int transmitCode = 0;
 
 void setShift(int value) 
 {
@@ -56,9 +53,6 @@ void setup()
 	bit_set(SR_CLR_PORT, SR_CLR_PIN);
 	_delay_ms(1);	
 
-	column = 0;
-	row = 0;
-	
 	bit_clear(MOSI_DDR, MOSI_PIN); // Make sure MOSI is an input
 
 	// Configure IR_OUT pwm
@@ -114,16 +108,20 @@ void transmit_start()
 void loop()
 {
 	if(!bit_get(BTN1_PORT, BTN1_PIN)) {
-		IRseq = 0b10000001;
-		rows = 0b10;
+          transmitCode += 1;
+          if(transmitCode >= 20) {
+            transmitCode = 0;
+          }
 	}
 
 	if(!bit_get(BTN2_PORT, BTN2_PIN)) {
-		IRseq = 0b10000010;
-		rows = 0b100;
+          // Does nothing
 	}
 
 	// Transmit sequence
+
+        IRseq = 0b10000000;
+        IRseq |= (transmitCode);
 
 	bit_clear(MISO_PORT, MISO_PIN);
 	_delay_us(1000);
@@ -140,8 +138,29 @@ void loop()
 		}
 	}
 	bit_clear(MISO_PORT, MISO_PIN);
-	setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
-	
+
+        colData[0] = 0;
+        colData[1] = 0;
+        colData[2] = 0;
+        colData[3] = 0;
+
+        int c = transmitCode / 5;
+        colData[c] = (char) 1<<(transmitCode % 5);
+
+        int row;
+	for(row=0;row<4;row++) {
+		int columns = colData[row];
+		int rows = 1<<(row % 4);
+		
+		setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
+		if(columns & 0x10) {
+			bit_clear(LED_C5_PORT,LED_C5_PIN);
+		} else {
+			bit_set(LED_C5_PORT,LED_C5_PIN);
+		}
+		_delay_ms(5);
+	}
+        setShift(0);
 	_delay_ms(1000);
 }
 
