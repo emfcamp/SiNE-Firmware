@@ -21,7 +21,8 @@ STRIP=avr-strip
 AVRDUDE=avrdude
 
 # Change this to change the default output name
-PROGNAME=sinetest
+BADGENAME=sinetest
+BEACONNAME=beacon
 
 # Change this section to change the chip type.
 PART=attiny44
@@ -29,26 +30,43 @@ PART=attiny44
 # Change this secton to change AVRDUDE settings
 AVRDUDE_PART=t44
 AVRDUDE_PROG=stk500v2
-AVRDUDE_PORT=/dev/ttyUSB0
+AVRDUDE_PORT=/dev/ttyACM0
 
 # Set the default action to be compiling everything, then writing the chip
-default: $(PROGNAME).hex
+default: $(BADGENAME).hex
 
-$(PROGNAME).o: $(PROGNAME).c
+$(BADGENAME).o: $(BADGENAME).c
 	$(CC) -g -O -mmcu=$(PART) -c $^ -o $@
 	
-$(PROGNAME): $(PROGNAME).o 
+$(BADGENAME): $(BADGENAME).o 
 	$(CC) -g -O -mmcu=$(PART) $^ -o $@
 
-$(PROGNAME)-stripped: $(PROGNAME)
+$(BADGENAME)-stripped: $(BADGENAME)
 	$(STRIP) $^ -o $@
 
-$(PROGNAME).hex: $(PROGNAME)-stripped
+$(BADGENAME).hex: $(BADGENAME)-stripped
 	$(OBJCOPY) -O ihex $^ $@
 
+$(BEACONNAME).o: $(BEACONNAME).c
+	$(CC) -g -O -mmcu=$(PART) -c $^ -o $@
+	
+$(BEACONNAME): $(BEACONNAME).o 
+	$(CC) -g -O -mmcu=$(PART) $^ -o $@
+
+$(BEACONNAME)-stripped: $(BEACONNAME)
+	$(STRIP) $^ -o $@
+
+$(BEACONNAME).hex: $(BEACONNAME)-stripped
+	$(OBJCOPY) -O ihex $^ $@
+
+
 # Program the chip, using avrdude and the variables set above
-program: $(PROGNAME).hex
-	$(AVRDUDE) -p $(AVRDUDE_PART) -c $(AVRDUDE_PROG) -P $(AVRDUDE_PORT) -U flash:w:$(PROGNAME).hex 
+program: $(BADGENAME).hex
+	$(AVRDUDE) -p $(AVRDUDE_PART) -c $(AVRDUDE_PROG) -P $(AVRDUDE_PORT) -U flash:w:$(BADGENAME).hex 
+
+# Program the chip, using avrdude and the variables set above
+progbeacon: $(BEACONNAME).hex
+	$(AVRDUDE) -p $(AVRDUDE_PART) -c $(AVRDUDE_PROG) -P $(AVRDUDE_PORT) -U flash:w:$(BEACONNAME).hex 
 
 fuses:	
 	$(AVRDUDE) -p $(AVRDUDE_PART) -c $(AVRDUDE_PROG) -P $(AVRDUDE_PORT) -U lfuse:w:0xc2:m -U hfuse:w:0xd7:m -U efuse:w:0xff:m
@@ -56,4 +74,5 @@ fuses:
 	
 # Cleanup, leave only makefile and any .c/.h files
 clean:
-	rm -f *.o $(PROGNAME) $(PROGNAME).hex $(PROGNAME)-stripped
+	rm -f *.o $(BADGENAME) $(BADGENAME).hex $(BADGENAME)-stripped
+	rm -f *.o $(BEACONNAME) $(BEACONNAME).hex $(BEACONNAME)-stripped
