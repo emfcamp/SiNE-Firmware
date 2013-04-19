@@ -105,6 +105,25 @@ void transmit_start()
 	_delay_us(600);
 }
 
+void transmit(int code) {
+  
+  bit_clear(MISO_PORT, MISO_PIN);
+  _delay_us(500);
+  transmit_start();
+  int bit;
+  for(bit=0;bit<12;bit++) {
+    int b = (IRseq>>bit) & 1;
+    if(b==0) {
+      transmit0();
+    }
+    else
+    {
+      transmit1();
+    }
+  }
+  bit_clear(MISO_PORT, MISO_PIN);
+}
+
 void loop()
 {
 	if(!bit_get(BTN1_PORT, BTN1_PIN)) {
@@ -122,22 +141,11 @@ void loop()
 
         IRseq = 0b10000000;
         IRseq |= (transmitCode);
-
-	bit_clear(MISO_PORT, MISO_PIN);
-	_delay_us(1000);
-        transmit_start();
-	int bit;
-	for(bit=0;bit<12;bit++) {
-		int b = (IRseq>>bit) & 1;
-		if(b==0) {
-			transmit0();
-		}
-		else
-		{
-			transmit1();
-		}
-	}
-	bit_clear(MISO_PORT, MISO_PIN);
+        int i;
+        for(i=0;i<5;i++) {
+          transmit(IRseq);
+          _delay_ms(100);
+        }
 
         colData[0] = 0;
         colData[1] = 0;
@@ -161,7 +169,7 @@ void loop()
 		_delay_ms(5);
 	}
         setShift(0);
-	_delay_ms(1000);
+	_delay_ms(500);
 }
 
 /**
