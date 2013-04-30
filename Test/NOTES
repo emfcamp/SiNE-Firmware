@@ -17,3 +17,44 @@ Power: 11110 01010 00110
 Input: 11110 01111 11001
 Plus-Screen: 11110 00101 11000
 Surround: 11110 00010 00111
+
+
+
+Shift register changes between dev and production
+PIN NAME    DEV     PRODUCTION
+3   QA      R1      R2
+4   QB      R2      R1
+5   QC      R3      C1
+6   QD      R4      C2
+7   QE      C4      C3
+8   QF      C3      C4
+9   QG      C2      R4
+10  QH      C1      R3
+
+C5 PA3
+
+Dev LED map, as looking at the board
+
+    C5  C4  C3  C2  C1
+    
+R1  *   *   *   *   *
+
+R2  *   *   *   *   *
+
+R3  *   *   *   *   *
+
+R4  *   *   *   *   *
+
+
+
+Production letter map
+
+    C1      C2      C3      C4      C5
+
+R1  A       B       C       D       E
+
+R2  K       L       M       N       O
+
+R3  F       G       H       I       J
+
+R4  P       Q       R       S       T
