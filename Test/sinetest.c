@@ -27,6 +27,7 @@ const int cmdlen = 12;
 #define DEBUG 1
 int mode = BEACONS;
 int frame;
+int badgeID = 0;
 
 ISR(PCINT0_vect)
 {
@@ -142,6 +143,8 @@ void setup()
         foundBeacons = eeprom_read_byte(0) | (eeprom_read_byte(1)<<8);
         foundBeacons2 = eeprom_read_byte(2) | (eeprom_read_byte(3)<<8);
         frame = 0;
+
+	badgeID = eeprom_read_byte(4) | (eeprom_read_byte(5)<<8);
 }
 
 void loop()
@@ -217,6 +220,18 @@ void loop()
 		setShift(0);
 		if(row%4==3) {
 			_delay_ms(5000);
+			// send ID...
+			cli();
+			int i;
+      			for(i=0;i<5;i++) {
+				int transmitCode = badgeID & 0x7F;
+				transmitCode |= 2 << 7; // Pseudo device
+				transmitCode |= (((badgeID >> 7) & 3) << 9);
+				transmit(transmitCode);
+				_delay_ms(100);
+			}
+			sei();
+
 		}
 	}
 	else {

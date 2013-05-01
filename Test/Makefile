@@ -38,7 +38,7 @@ default: $(BADGENAME).hex
 $(BADGENAME).o: $(BADGENAME).c
 	$(CC) -g -O -mmcu=$(PART) -c $^ -o $@
 	
-$(BADGENAME): $(BADGENAME).o 
+$(BADGENAME): $(BADGENAME).o transmit.c
 	$(CC) -g -O -mmcu=$(PART) $^ -o $@
 
 $(BADGENAME)-stripped: $(BADGENAME)
@@ -50,7 +50,7 @@ $(BADGENAME).hex: $(BADGENAME)-stripped
 $(BEACONNAME).o: $(BEACONNAME).c
 	$(CC) -g -O -mmcu=$(PART) -c $^ -o $@
 	
-$(BEACONNAME): $(BEACONNAME).o 
+$(BEACONNAME): $(BEACONNAME).o transmit.c
 	$(CC) -g -O -mmcu=$(PART) $^ -o $@
 
 $(BEACONNAME)-stripped: $(BEACONNAME)

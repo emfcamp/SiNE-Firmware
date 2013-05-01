@@ -8,6 +8,7 @@
 
 #include "macros.h"
 #include "sinetest.h"
+#include "transmit.h"
 
 char colData[4];
 volatile int IRcode = 0;
@@ -79,49 +80,6 @@ void setup()
 
 	bit_set(BTN1_PORT, BTN1_PIN);
 	bit_set(BTN2_PORT, BTN2_PIN);
-}
-
-void transmit1()
-{
-	bit_set(MISO_PORT, MISO_PIN);
-	_delay_us(1200);
-	bit_clear(MISO_PORT, MISO_PIN); 
-	_delay_us(600);
-}
-
-void transmit0()
-{
-	bit_set(MISO_PORT, MISO_PIN);
-	_delay_us(600);
-	bit_clear(MISO_PORT, MISO_PIN); 
-	_delay_us(600);
-}
-
-void transmit_start()
-{
-	bit_set(MISO_PORT, MISO_PIN);
-	_delay_us(600*4);
-	bit_clear(MISO_PORT, MISO_PIN); 
-	_delay_us(600);
-}
-
-void transmit(int code) {
-  
-  bit_clear(MISO_PORT, MISO_PIN);
-  _delay_us(500);
-  transmit_start();
-  int bit;
-  for(bit=0;bit<12;bit++) {
-    int b = (IRseq>>bit) & 1;
-    if(b==0) {
-      transmit0();
-    }
-    else
-    {
-      transmit1();
-    }
-  }
-  bit_clear(MISO_PORT, MISO_PIN);
 }
 
 void loop()
