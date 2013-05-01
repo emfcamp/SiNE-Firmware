@@ -190,8 +190,6 @@ void loop()
 	
         row += 1;
 
-	// debug
-	colData[2] |= 4;
 	  
         int columns = colData[row%4];
         int rows = 1<<(row % 4);
@@ -214,11 +212,17 @@ void loop()
           bit_set(LED_C5_PORT,LED_C5_PIN);
         }
 
-        _delay_ms(500);
-        setShift(0);
-        if(row%4==3) {
-		_delay_ms(5000);
-        }
+	if(mode==BEACONS) {
+		_delay_ms(500);
+		setShift(0);
+		if(row%4==3) {
+			_delay_ms(5000);
+		}
+	}
+	else {
+		_delay_ms(5);
+	}
+	       
 }
 
 /**
