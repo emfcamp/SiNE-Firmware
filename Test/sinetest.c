@@ -189,18 +189,35 @@ void loop()
         frame += 1;
 	
         row += 1;
+
+	// debug
+	colData[2] |= 4;
+	  
         int columns = colData[row%4];
         int rows = 1<<(row % 4);
+
+
+#ifdef OLDBADGE
         setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
+#else
+        int shiftData = (0xF ^ (columns & 0xF))<<2;
+	shiftData |= (rows & 1) << 6;
+	shiftData |= (rows & 2) << 6;
+	shiftData |= (rows & 4) >> 2;
+	shiftData |= (rows & 8) >> 2;
+	setShift(shiftData);
+#endif
+
         if(columns & 0x10) {
           bit_clear(LED_C5_PORT,LED_C5_PIN);
         } else {
           bit_set(LED_C5_PORT,LED_C5_PIN);
         }
+
         _delay_ms(500);
         setShift(0);
         if(row%4==3) {
-          _delay_ms(5000);
+		_delay_ms(5000);
         }
 }
 
