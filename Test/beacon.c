@@ -107,6 +107,7 @@ void loop()
 		int columns = colData[row];
 		int rows = 1<<(row % 4);
                 configureLEDs(columns, rows);
+                _delay_ms(5);
         }
 
         setShift(0);
