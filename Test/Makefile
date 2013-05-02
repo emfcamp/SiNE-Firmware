@@ -50,7 +50,7 @@ $(BADGENAME).hex: $(BADGENAME)-stripped
 $(BEACONNAME).o: $(BEACONNAME).c
 	$(CC) -g -O -mmcu=$(PART) -c $^ -o $@
 	
-$(BEACONNAME): $(BEACONNAME).o transmit.c
+$(BEACONNAME): $(BEACONNAME).o transmit.c display.c
 	$(CC) -g -O -mmcu=$(PART) $^ -o $@
 
 $(BEACONNAME)-stripped: $(BEACONNAME)
