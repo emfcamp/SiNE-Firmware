@@ -81,6 +81,26 @@ void setShift(int value)
 	}     
 }
 
+void configureLEDs(int columns, int rows) 
+{
+#ifdef OLDBADGE
+        setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
+#else
+        int shiftData = (0xF ^ (columns & 0xF))<<2;
+	shiftData |= (rows & 1) << 6;
+	shiftData |= (rows & 2) << 6;
+	shiftData |= (rows & 4) >> 2;
+	shiftData |= (rows & 8) >> 2;
+	setShift(shiftData);
+#endif
+
+        if(columns & 0x10) {
+          bit_clear(LED_C5_PORT,LED_C5_PIN);
+        } else {
+          bit_set(LED_C5_PORT,LED_C5_PIN);
+        }
+}
+
 void setup()
 {
 	// Set shift register pins to output
@@ -212,28 +232,13 @@ void loop()
 
         row += 1;
 
-#ifdef OLDBADGE
-        setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
-#else
-        int shiftData = (0xF ^ (columns & 0xF))<<2;
-	shiftData |= (rows & 1) << 6;
-	shiftData |= (rows & 2) << 6;
-	shiftData |= (rows & 4) >> 2;
-	shiftData |= (rows & 8) >> 2;
-	setShift(shiftData);
-#endif
 
-
-        if(columns & 0x10) {
-          bit_clear(LED_C5_PORT,LED_C5_PIN);
-        } else {
-          bit_set(LED_C5_PORT,LED_C5_PIN);
-        }
+        configureLEDs(columns, rows);
 
 	if(mode==BEACONS) {
 		_delay_ms(500);
-		setShift(0);
-		if(row%4==3) {
+                configureLEDs(0,0);
+		if(row%4==0) {
 			_delay_ms(5000);
 			// send ID...
 			cli();
