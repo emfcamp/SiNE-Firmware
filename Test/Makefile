@@ -38,7 +38,7 @@ default: $(BADGENAME).hex
 $(BADGENAME).o: $(BADGENAME).c
 	$(CC) -g -O -mmcu=$(PART) -c $^ -o $@
 	
-$(BADGENAME): $(BADGENAME).o transmit.c
+$(BADGENAME): $(BADGENAME).o transmit.c display.c
 	$(CC) -g -O -mmcu=$(PART) $^ -o $@
 
 $(BADGENAME)-stripped: $(BADGENAME)
