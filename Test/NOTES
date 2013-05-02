@@ -58,3 +58,17 @@ R2  K       L       M       N       O
 R3  F       G       H       I       J
 
 R4  P       Q       R       S       T
+
+
+
+## Infrared Protocol ##
+
+All communications are based on a 13-bit RC-5 protocol.
+
+There are 20 beacons, so we need a 5-bit code for those.
+Beacons then can be 000, [inverted beacon code] [ beacon code] and only light up if the beacon codes agree.
+
+Tracking codes are 9-bit.
+So, [01] [Optional checksum] [9 bit tracking code]
+
+Nodte: At the moment the checksum is just the lowest 2 bits of the tracking code.

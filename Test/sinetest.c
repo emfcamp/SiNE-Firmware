@@ -144,7 +144,7 @@ void setup()
         foundBeacons2 = eeprom_read_byte(2) | (eeprom_read_byte(3)<<8);
         frame = 0;
 
-	badgeID = eeprom_read_byte(4) | (eeprom_read_byte(5)<<8);
+	badgeID = eeprom_read_byte(4) | ((eeprom_read_byte(5) & 1)<<8);
 
         idTimeout = 5;
 }
@@ -158,22 +158,27 @@ void loop()
           mode = DEBUG;
 	}
         
-        int command = latchIR & 0x7F;
-        int device = (latchIR>> 7) & 0x1F;
-
-        if(device == 1 && command < 10) {
-          if((foundBeacons & (1<<command)) == 0) {
-            foundBeacons |= (1<<command);
-            eeprom_write_byte(0,foundBeacons);
-            eeprom_write_byte(1,foundBeacons>>8);
+        // Process potentially new beacons.
+        if((latchIR >> 10) == 0) {
+          int badgeCode = (latchIR >> 5) & 0x1F;
+          int badgeConfirm = 0x1f^(latchIR & 0x1F);
+          if(badgeCode == badgeConfirm) {
+            if(badgeCode < 10) {
+              if((foundBeacons & (1<<badgeCode)) == 0) {
+                foundBeacons |= (1<<badgeCode);
+                eeprom_write_byte(0,foundBeacons);
+                eeprom_write_byte(1,foundBeacons>>8);
+              }
+            }
+            else if(badgeCode < 20) {
+              if((foundBeacons2 & (1<<(badgeCode-10))) == 0) {
+                foundBeacons2 |= (1<<(badgeCode-10));
+                eeprom_write_byte(2,foundBeacons2);
+                eeprom_write_byte(3,foundBeacons2>>8);
+              }
+            }
           }
-        }
-        else if(device == 1 && command < 20) {
-          if((foundBeacons2 & (1<<(command-10))) == 0) {
-            foundBeacons2 |= (1<<(command-10));
-            eeprom_write_byte(2,foundBeacons2);
-            eeprom_write_byte(3,foundBeacons2>>8);
-          }
+          
         }
 
         if(mode == BEACONS) {
@@ -235,7 +240,8 @@ void loop()
 			int i;
       			for(i=0;i<5;i++) {
                           int transmitCode = badgeID;
-				transmit(transmitCode);
+                          int checkCode = badgeID & 3;
+				transmit(transmitCode | checkCode << 9 | 1 << 11);
 				_delay_ms(100);
 			}
 			sei();
