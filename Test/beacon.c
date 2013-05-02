@@ -97,8 +97,8 @@ void loop()
 
 	// Transmit sequence
 
-        IRseq = 0b10000000;
-        IRseq |= (transmitCode);
+        IRseq = (transmitCode) | (0x1F ^ transmitCode) << 5;
+
         int i;
         for(i=0;i<5;i++) {
           transmit(IRseq);

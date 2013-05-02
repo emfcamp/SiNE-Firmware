@@ -160,8 +160,8 @@ void loop()
         
         // Process potentially new beacons.
         if((latchIR >> 10) == 0) {
-          int badgeCode = (latchIR >> 5) & 0x1F;
-          int badgeConfirm = 0x1f^(latchIR & 0x1F);
+          int badgeCode = latchIR & 0x1F;
+          int badgeConfirm = 0x1f^((latchIR >> 5) & 0x1F);
           if(badgeCode == badgeConfirm) {
             if(badgeCode < 10) {
               if((foundBeacons & (1<<badgeCode)) == 0) {
