@@ -72,3 +72,18 @@ Tracking codes are 9-bit.
 So, [01] [Optional checksum] [9 bit tracking code]
 
 Nodte: At the moment the checksum is just the lowest 2 bits of the tracking code.
+
+
+EEPROM Data:
+
+
+Bytes:
+Bytes 0-3 are persistent beacon data, a record of which beacons this badge has seen.
+00 Beacons 0-9
+01
+02 Beacons 10-19
+03
+
+Bytes 4-5 are the ID of this badge.
+Byte 4 is the low order 8 bits of the badge ID.
+The lowest bit of byte 5 is bit 9 of the badge ID.
