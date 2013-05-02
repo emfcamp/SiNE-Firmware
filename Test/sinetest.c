@@ -28,7 +28,7 @@ const int cmdlen = 12;
 int mode = BEACONS;
 int frame;
 int badgeID = 0;
-
+int idTimeout = 0;
 ISR(PCINT0_vect)
 {
         const int tolerance = 200;
@@ -145,6 +145,8 @@ void setup()
         frame = 0;
 
 	badgeID = eeprom_read_byte(4) | (eeprom_read_byte(5)<<8);
+
+        idTimeout = 5;
 }
 
 void loop()
@@ -191,12 +193,19 @@ void loop()
 	//bit_flip(MISO_PORT, MISO_PIN); // Uncomment this to flash the IR Led
         frame += 1;
 	
-        row += 1;
+
+        if(idTimeout > 0) {
+          colData[0] = badgeID & 0x1F;
+          colData[1] = (badgeID >> 5) & 0x1F;
+          idTimeout -= 1;
+        }
+
 
 	  
         int columns = colData[row%4];
         int rows = 1<<(row % 4);
 
+        row += 1;
 
 #ifdef OLDBADGE
         setShift(((rows & 0xF) << 4) + (0xF ^ (columns & 0xF)));
@@ -208,6 +217,7 @@ void loop()
 	shiftData |= (rows & 8) >> 2;
 	setShift(shiftData);
 #endif
+
 
         if(columns & 0x10) {
           bit_clear(LED_C5_PORT,LED_C5_PIN);
@@ -224,9 +234,7 @@ void loop()
 			cli();
 			int i;
       			for(i=0;i<5;i++) {
-				int transmitCode = badgeID & 0x7F;
-				transmitCode |= 2 << 7; // Pseudo device
-				transmitCode |= (((badgeID >> 7) & 3) << 9);
+                          int transmitCode = badgeID;
 				transmit(transmitCode);
 				_delay_ms(100);
 			}
