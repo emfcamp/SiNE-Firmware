@@ -31,8 +31,8 @@ void configureLEDs(int columns, int rows)
         columns = (columns & 8) >> 3 | (columns & 4) >> 1 | ( columns & 2) << 1 | (columns & 1) << 3 | (columns & 0x10);
         int shiftData = (0xF ^ (columns & 0xF))<<2;
 	shiftData |= (rows & 1) << 6;
-	shiftData |= (rows & 2) << 6;
-	shiftData |= (rows & 4) >> 2;
+	shiftData |= (rows & 4) << 5;
+	shiftData |= (rows & 2) >> 1;
 	shiftData |= (rows & 8) >> 2;
 	setShift(shiftData);
 #endif
