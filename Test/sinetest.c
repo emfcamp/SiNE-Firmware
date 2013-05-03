@@ -31,6 +31,7 @@ int mode = BEACONS;
 int frame;
 int badgeID = 0;
 int idTimeout = 0;
+
 ISR(PCINT0_vect)
 {
         const int tolerance = 200;
@@ -136,16 +137,16 @@ void setup()
 
 	badgeID = eeprom_read_byte(4) | ((eeprom_read_byte(5) & 1)<<8);
 
-        idTimeout = 5;
+        idTimeout = 4;
 }
 
 void loop()
 {
 	if(!bit_get(BTN1_PORT, BTN1_PIN)) {
-          mode = BEACONS;
+          idTimeout = 4;
 	}
 	if(!bit_get(BTN2_PORT, BTN2_PIN)) {
-          mode = DEBUG;
+          // Does nothing
 	}
         
         // Process potentially new beacons.
@@ -206,7 +207,7 @@ void loop()
         configureLEDs(columns, rows);
 
 	if(mode==BEACONS) {
-		_delay_ms(500);
+		_delay_ms(300);
                 configureLEDs(0,0);
 		if(row%4==0) {
 			_delay_ms(5000);
