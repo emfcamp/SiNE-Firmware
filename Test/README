@@ -1,0 +1,32 @@
+EMF Beacon Badge
+----------------
+
+Using the badges
+----------------
+Badges start off blank. The LEDs will flicker occasionally as an unavoidable side effect of the shift register.
+As beacons are seen by the badge, LEDs will start to light up. The LEDS will flash once every five seconds if the respective beacon has been seen.
+
+On startup, and after holding down the left button (left with the name plate pointing away from you), the badge will display its ID. It is displayed in binary, least significant byte first, so 'A' is 1, 'B' is 2, 'C' is 4 etc. The first five bits are displayed first on A-E shortly followed by the next four bits on F-I. 
+
+The badge transmits its ID roughly five times per second. 
+
+If you hold down the right button for 5-10 seconds, the badge ID will be cleared. This is permanent; you can only restore the badge ID by reprogramming the eeprom.
+
+Seen beacons and the badge ID are held in EEPROM so persist when power is lost.
+
+
+Using the beacons
+-----------------
+All beacons start transmitting 'A' and also flash the relevant LED for the code they transmit. You can change the beacon by holding down the left button. This isn't saved in eeprom; after a power cycle, it will be 'A' again.
+
+Programming
+-----------
+To make and program an EMF Badge, type 'make program'. You may need to alter Makefile to suit your particular programmer. You may need root priviledges to do this.
+
+You also need to set the eeprom on the badge. There is a file called 'eeprom.bin' which is six bytes long. Bytes 0-3 contain the seen beacon information and should all be zero at startup.
+Bytes 4 and 5 contain the badge ID. Byte 4 contains the lower order 8 bits of the badge ID and the lowest bit of byte 5 contains the high bit of the badgeID. This should be changed to a unique value for each badge. Value 0 is not a valid badge ID and nothing will be transmitted.
+
+You can program the eeprom from eeprom.bin with 'make eeprom'.
+
+To make and program the beacon, type 'make progbeacon'. Beacons do not need any eeprom programmed.
+
