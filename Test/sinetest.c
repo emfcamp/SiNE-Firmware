@@ -31,6 +31,7 @@ int mode = BEACONS;
 int frame;
 int badgeID = 0;
 int idTimeout = 0;
+int eraseConfirm;
 
 ISR(PCINT0_vect)
 {
@@ -138,6 +139,7 @@ void setup()
 	badgeID = eeprom_read_byte(4) | ((eeprom_read_byte(5) & 1)<<8);
 
         idTimeout = 4;
+        eraseConfirm = 0;
 }
 
 void loop()
@@ -145,9 +147,22 @@ void loop()
 	if(!bit_get(BTN1_PORT, BTN1_PIN)) {
           idTimeout = 4;
 	}
+
 	if(!bit_get(BTN2_PORT, BTN2_PIN)) {
-          // Does nothing
+          eraseConfirm += 1;
+          if(eraseConfirm > 1) {
+            if(badgeID > 0) {
+              eeprom_write_byte(4,0);
+              eeprom_write_byte(5,0);
+            }
+            badgeID = 0;
+          }
+
 	}
+        else
+        {
+          eraseConfirm = 0;
+        }
         
         // Process potentially new beacons.
         if((latchIR >> 10) == 0) {
@@ -207,20 +222,22 @@ void loop()
         configureLEDs(columns, rows);
 
 	if(mode==BEACONS) {
-		_delay_ms(300);
+		_delay_ms(400);
                 configureLEDs(0,0);
 		if(row%4==0) {
 			_delay_ms(5000);
-			// send ID...
-			cli();
-			int i;
-      			for(i=0;i<5;i++) {
-                          int transmitCode = badgeID;
-                          int checkCode = badgeID & 3;
-				transmit(transmitCode | checkCode << 9 | 1 << 11);
-				_delay_ms(100);
-			}
-			sei();
+                        if(badgeID > 0) {
+                          // send ID...
+                          cli();
+                          int i;
+                          for(i=0;i<5;i++) {
+                            int transmitCode = badgeID;
+                            int checkCode = badgeID & 3;
+                            transmit(transmitCode | checkCode << 9 | 3 << 11);
+                            _delay_ms(100);
+                          }
+                          sei();
+                        }
 
 		}
 	}
