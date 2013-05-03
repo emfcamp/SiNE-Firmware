@@ -132,14 +132,31 @@ void setup()
 	// Ideally we should set up timer1 so it latches at TOP
 	TCCR1B = 2; // Start clock (/8 prescaler = 1Mhz)
 
-        foundBeacons = eeprom_read_byte(0) | (eeprom_read_byte(1)<<8);
-        foundBeacons2 = eeprom_read_byte(2) | (eeprom_read_byte(3)<<8);
+        foundBeacons = eeprom_read_byte((char*)0) | (eeprom_read_byte((char*)1)<<8);
+        foundBeacons2 = eeprom_read_byte((char*)2) | (eeprom_read_byte((char*)3)<<8);
         frame = 0;
 
-	badgeID = eeprom_read_byte(4) | ((eeprom_read_byte(5) & 1)<<8);
+	badgeID = eeprom_read_byte((char*)4) | ((eeprom_read_byte((char*)5) & 1)<<8);
 
         idTimeout = 4;
         eraseConfirm = 0;
+}
+
+void transmitBadgeID()
+{
+  if(badgeID > 0) {
+    // send ID...
+    cli();
+    int i;
+    for(i=0;i<5;i++) {
+      int transmitCode = badgeID;
+      int checkCode = badgeID & 3;
+      transmit(transmitCode | checkCode << 9 | 3 << 11);
+      _delay_ms(100);
+    }
+    sei();
+  }
+
 }
 
 void loop()
@@ -152,8 +169,8 @@ void loop()
           eraseConfirm += 1;
           if(eraseConfirm > 1) {
             if(badgeID > 0) {
-              eeprom_write_byte(4,0);
-              eeprom_write_byte(5,0);
+              eeprom_write_byte((char*)4,0);
+              eeprom_write_byte((char*)5,0);
             }
             badgeID = 0;
           }
@@ -172,15 +189,15 @@ void loop()
             if(badgeCode < 10) {
               if((foundBeacons & (1<<badgeCode)) == 0) {
                 foundBeacons |= (1<<badgeCode);
-                eeprom_write_byte(0,foundBeacons);
-                eeprom_write_byte(1,foundBeacons>>8);
+                eeprom_write_byte((char*)0,foundBeacons);
+                eeprom_write_byte((char*)1,foundBeacons>>8);
               }
             }
             else if(badgeCode < 20) {
               if((foundBeacons2 & (1<<(badgeCode-10))) == 0) {
                 foundBeacons2 |= (1<<(badgeCode-10));
-                eeprom_write_byte(2,foundBeacons2);
-                eeprom_write_byte(3,foundBeacons2>>8);
+                eeprom_write_byte((char*)2,foundBeacons2);
+                eeprom_write_byte((char*)3,foundBeacons2>>8);
               }
             }
           }
@@ -225,20 +242,11 @@ void loop()
 		_delay_ms(400);
                 configureLEDs(0,0);
 		if(row%4==0) {
-			_delay_ms(5000);
-                        if(badgeID > 0) {
-                          // send ID...
-                          cli();
-                          int i;
-                          for(i=0;i<5;i++) {
-                            int transmitCode = badgeID;
-                            int checkCode = badgeID & 3;
-                            transmit(transmitCode | checkCode << 9 | 3 << 11);
-                            _delay_ms(100);
-                          }
-                          sei();
-                        }
-
+                  int i;
+                  for(i=0;i<5;i++) {
+			_delay_ms(1000);
+                        transmitBadgeID();
+                  }
 		}
 	}
 	else {
