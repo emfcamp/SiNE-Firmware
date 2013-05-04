@@ -12,9 +12,6 @@
 #include "display.h"
 #include "common_config.h"
 
-volatile int column;
-volatile int row;
-
 char colData[4];
 
 // Globals used by IR receiver interrupt
@@ -99,8 +96,6 @@ void setup()
 	// Set up other global variables
         idTimeout = 4;
         eraseConfirm = 0;
-	column = 0;
-	row = 0;
         frame = 0;
 }
 
