@@ -16,17 +16,21 @@ volatile int column;
 volatile int row;
 
 char colData[4];
+
+// Globals used by IR receiver interrupt
 volatile int IRcode = 0;
 int latchIR = 0;
-char currentBit = 1;
 unsigned int oldTime = 0;
 volatile int seq = 0;
 int bit = 0;
+
 unsigned int foundBeacons = 0;
 unsigned int foundBeacons2 = 0;
+
 const int cmdlen = 12;
 #define BEACONS 0
 #define DEBUG 1
+
 int mode = BEACONS;
 int frame;
 int badgeID = 0;
