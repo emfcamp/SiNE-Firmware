@@ -12,17 +12,6 @@
 #include "display.h"
 
 char colData[4];
-volatile int IRcode = 0;
-int latchIR = 0;
-char currentBit = 1;
-unsigned int oldTime = 0;
-char interbit = 0;
-volatile int seq = 0;
-const int tolerance = 200;
-int receives = 0;
-int elapsed = 0;
-int collection = 0;
-int IRseq = 0;
 
 int transmitCode = 0;
 
@@ -47,7 +36,7 @@ void loop()
 
 	// Transmit sequence
 
-        IRseq = (transmitCode) | (0x1F ^ transmitCode) << 5;
+        int IRseq = (transmitCode) | (0x1F ^ transmitCode) << 5;
 
         int i;
         for(i=0;i<5;i++) {
