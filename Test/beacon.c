@@ -10,6 +10,7 @@
 #include "sinetest.h"
 #include "transmit.h"
 #include "display.h"
+#include "common_config.h"
 
 char colData[4];
 
