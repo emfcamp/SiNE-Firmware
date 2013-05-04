@@ -33,6 +33,7 @@ int frame;
 int badgeID = 0;
 int idTimeout = 0;
 int eraseConfirm;
+int row;
 
 ISR(PCINT0_vect)
 {
@@ -97,6 +98,7 @@ void setup()
         idTimeout = 4;
         eraseConfirm = 0;
         frame = 0;
+	row = 0;
 }
 
 void transmitBadgeID()
