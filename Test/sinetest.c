@@ -122,9 +122,11 @@ void setup()
 	TCCR0A |= (1<<COM0B0) | (1<<WGM01); // Toggle OC0B on compare match, CTC mode
 	TCCR0B = 1; // start clock (/1 prescaler)
 
-
-	bit_set(BTN1_PORT, BTN1_PIN);
-	bit_set(BTN2_PORT, BTN2_PIN);
+    // Buttons
+	bit_clear(BTN1_DDR, BTN1_BIT);      // set to input
+	bit_clear(BTN2_DDR, BTN2_BIT);      // set to input
+	bit_set(BTN1_PORT, BTN1_BIT);       // enable pull up
+	bit_set(BTN2_PORT, BTN2_BIT);       // enable pull up
 
 	TCNT1H = 0; // Initial TIMER1
 	TCNT1L = 0; // Initial TIMER1
@@ -161,11 +163,11 @@ void transmitBadgeID()
 
 void loop()
 {
-	if(!bit_get(BTN1_PORT, BTN1_PIN)) {
+	if(!bit_get(BTN1_PIN, BTN1_BIT)) {     // Button pressed reads as 0
           idTimeout = 4;
 	}
 
-	if(!bit_get(BTN2_PORT, BTN2_PIN)) {
+	if(!bit_get(BTN2_PIN, BTN2_BIT)) {
           eraseConfirm += 1;
           if(eraseConfirm > 1) {
             if(badgeID > 0) {
@@ -225,6 +227,8 @@ void loop()
         if(idTimeout > 0) {
           colData[0] = badgeID & 0x1F;
           colData[1] = (badgeID >> 5) & 0x1F;
+          colData[2] = 0;
+          colData[3] = 0;
           idTimeout -= 1;
         }
 
