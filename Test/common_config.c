@@ -29,9 +29,11 @@ void general_pin_setup()
 	// Make sure MOSI is an input
 	bit_clear(MOSI_DDR, MOSI_PIN);
 
-	// Pullups on both buttons
-	bit_set(BTN1_PORT, BTN1_PIN);
-	bit_set(BTN2_PORT, BTN2_PIN);
+	// Set to input with pullups on both buttons
+	bit_clear(BTN1_DDR, BTN1_BIT);
+	bit_clear(BTN2_DDR, BTN2_BIT);
+	bit_set(BTN1_PORT, BTN1_BIT);
+	bit_set(BTN2_PORT, BTN2_BIT);
 }
 
 void configure_IR_interrupt()
