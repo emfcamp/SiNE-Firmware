@@ -120,11 +120,11 @@ void transmitBadgeID()
 
 void loop()
 {
-	if(!bit_get(BTN1_PORT, BTN1_PIN)) {
+	if(!bit_get(BTN1_PIN, BTN1_BIT)) {     // Button pressed reads as 0
           idTimeout = 4;
 	}
 
-	if(!bit_get(BTN2_PORT, BTN2_PIN)) {
+	if(!bit_get(BTN2_PIN, BTN2_BIT)) {
           eraseConfirm += 1;
           if(eraseConfirm > 1) {
             if(badgeID > 0) {
@@ -184,6 +184,8 @@ void loop()
         if(idTimeout > 0) {
           colData[0] = badgeID & 0x1F;
           colData[1] = (badgeID >> 5) & 0x1F;
+          colData[2] = 0;
+          colData[3] = 0;
           idTimeout -= 1;
         }
 

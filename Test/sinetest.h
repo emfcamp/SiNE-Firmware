@@ -34,11 +34,17 @@
 #define IR_PWM_PIN BIT(7)
 
 #define BTN1_DDR DDRB
-#define BTN1_PORT PINB
-#define BTN1_PIN BIT(0)
+#define BTN1_PORT PORTB
+#define BTN1_PIN PINB
+#define BTN1_BIT BIT(0)
 
 #define BTN2_DDR DDRB
-#define BTN2_PORT PINB
-#define BTN2_PIN BIT(1)
+#define BTN2_PORT PORTB
+#define BTN2_PIN PINB
+#define BTN2_BIT BIT(1)
+
+#define TESTPAD_DDR DDRB
+#define TESTPAD_PORT PORTB
+#define TESTPAD_PIN BIT(2)
 
 
